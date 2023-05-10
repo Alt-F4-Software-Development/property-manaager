@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
 import { initializeApp } from "firebase/app";
 import { doc, getDoc, getFirestore, type DocumentData } from "firebase/firestore";
+import { getDownloadURL, getStorage, ref } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBtXxk3kH9wf0qKd2R6Ku1qGVNBQ0kuA2M",
@@ -16,13 +17,21 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const storage = getStorage(app);
 
 export const load = (async ({ params }) => {
 	console.log(params);
 	let retData: DocumentData | boolean = false;
+	let img;
 	const docum = await getDoc(doc(db, `properties/${params.property}`));
+	try{
+	img = await getDownloadURL(ref(storage, `properties/${params.property}.png`))
+	}catch{
+	img = getDownloadURL(ref(storage, `gs://muntean-property-manager.appspot.com/ouse.png`))
+	}
 	if (docum.exists()) {
 		retData = docum.data();
+		retData.Image = img;
 	}
 	console.log(retData);
 	if (retData == false) {

@@ -19,26 +19,21 @@ const firebaseConfig = {
   const db = getFirestore(app);
   const storage = getStorage(app);
   
-export const load = (async () => {
+export const load = (() => {
     const PropertyList: FirebasePropertyData[] = []
-    let retval: FirebasePropertyData[];
-    retval = await getDocs(collection(db, "properties")).then((querySnapshot) => {
+    return getDocs(collection(db, "properties")).then(async (querySnapshot) => {
         querySnapshot.forEach((doc) => {
             PropertyList.push(doc.data() as FirebasePropertyData);
             console.log(1)
         });
         for(let i=0; i<PropertyList.length; i++) {
             console.log(PropertyList[i].Image)
-            if(PropertyList[i].Image == ""){
-                getDownloadURL(ref(storage, `gs://muntean-property-manager.appspot.com/ouse.png`)).then((url) => {
-                    PropertyList[i].Image = url;
-                    console.log(2)
-                });
-            }
+            try {
+            PropertyList[i].Image = await getDownloadURL(ref(storage, `properties/${PropertyList[i].Name.toLowerCase()}.png`));
+        } catch {
+            PropertyList[i].Image = await getDownloadURL(ref(storage, `gs://muntean-property-manager.appspot.com/ouse.png`));
         }
-        return PropertyList;
+        }
+        return {PropertyList};
     })
-    
-    console.log(PropertyList)
-    return {retval};
 }) satisfies PageLoad;
