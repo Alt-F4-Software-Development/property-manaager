@@ -4,6 +4,7 @@
     export let data: FirebasePropertyData;
 	const handleSubmit = () => {
 		console.log('Submitted');
+		location.href = `/${data.Name.toLowerCase()}`;
 	};
 </script>
 
